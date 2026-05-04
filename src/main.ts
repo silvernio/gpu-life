@@ -79,7 +79,8 @@ let fpsc = 0;
 
 import * as nSquared from './nSquared/main';
 import * as linkedList from './linkedList/main';
-import * as countingSort from './countingSort/main';
+//import * as countingSort from './countingSort/main';
+import * as countingSort from './countingSortOptimized/main';
 const engines: Record<
   string,
   typeof nSquared | typeof linkedList | typeof countingSort
@@ -392,13 +393,13 @@ function update() {
   const commands = commandEncoder.finish();
   device.queue.submit([commands]);
 
-  device.popErrorScope().then((error) => {
+  /*device.popErrorScope().then((error) => {
     if (error) {
       // some weird bug happened with timestamps, just disable it and restart the simulation
       window.location.href +=
         (window.location.search ? '&' : '?') + 'noTimestamp';
     }
-  });
+  }); */
 
   const cpuTime = performance.now() - start;
   globalPerformanceParams.cpu = cpuTime;

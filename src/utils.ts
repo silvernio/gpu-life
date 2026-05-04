@@ -120,7 +120,7 @@ export async function requestTimestamps(adapter: GPUAdapter) {
 
   if (canTimestamp) {
     const device = await adapter.requestDevice({
-      requiredFeatures: ['timestamp-query'],
+      requiredFeatures: ['timestamp-query', 'subgroups'],
     });
     if (!device.features.has('timestamp-query')) {
       canTimestamp = false;
