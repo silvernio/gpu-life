@@ -2,10 +2,12 @@ import { constructBuiltinDeclarations } from './utils';
 
 export const DownSweepCompute = (
   workgroupSize: number,
-  linearIndexingAvailable: boolean
+  linearIndexingAvailable: boolean = false,
+  subgroupIDAvailable: boolean = false,
 ): string => {
   const builtinDeclarations = constructBuiltinDeclarations(
-    linearIndexingAvailable
+    linearIndexingAvailable,
+	subgroupIDAvailable
   );
   return /* wgsl */ `
 override OUTPUT_INDEX_OFFSET: u32 = 0u;
@@ -36,13 +38,10 @@ fn downSweep(
 ${builtinDeclarations}
 ) {
 
-	${
-    !linearIndexingAvailable &&
-    `instanceIndex = globalId.x + globalId.y * ( ${workgroupSize} * numWorkgroups.x ) + globalId.z * ( ${workgroupSize} * numWorkgroups.x ) * ( 1 * numWorkgroups.y );`
-  }
+	${!linearIndexingAvailable ? `instanceIndex = globalId.x + globalId.y * ( ${workgroupSize} * numWorkgroups.x ) + globalId.z * ( ${workgroupSize} * numWorkgroups.x ) * ( 1 * numWorkgroups.y );` : ''}
 
     // TODO: Investigate replacing with subgroup_id
-	var invocationSubgroupMetaIndex : u32;
+	// var invocationSubgroupMetaIndex : u32;
 	var subgroupOffset : u32;
 	var workgroupOffset : u32;
 	var nodeVar0 : u32;
@@ -67,7 +66,7 @@ ${builtinDeclarations}
 	var nodeVar14 : bool;
 	var savedX : array< u32, 4 >;
 
-	invocationSubgroupMetaIndex = ( invocationLocalIndex / subgroupSize );
+	${!subgroupIDAvailable ? 'var invocationSubgroupMetaIndex: u32 = ( invocationLocalIndex / subgroupSize );' : ''}
 	subgroupOffset = ( ( invocationSubgroupMetaIndex * subgroupSize ) * params.workPerInvocation );
 	workgroupOffset = ( workgroupId.x * ( params.workgroupSize * params.workPerInvocation ) );
 	nodeVar0 = ( ( subgroupOffset + invocationSubgroupIndex ) + workgroupOffset );

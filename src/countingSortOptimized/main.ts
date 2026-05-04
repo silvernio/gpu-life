@@ -252,7 +252,6 @@ export function start(
 
   prefixSumModule = new InclusivePrefixSum(
     device,
-    navigator.gpu.wgslLanguageFeatures.has('linear-indexing'),
     countBuffer,
     prefixSumBuffer,
     2

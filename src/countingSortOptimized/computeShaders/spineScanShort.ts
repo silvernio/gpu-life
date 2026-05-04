@@ -24,10 +24,7 @@ ${builtinDeclarations}
 ) {
 
 	// system
-	${
-    !linearIndexingAvailable &&
-    `instanceIndex = globalId.x + globalId.y * ( ${workgroupSize} * numWorkgroups.x ) + globalId.z * ( ${workgroupSize} * numWorkgroups.x ) * ( 1 * numWorkgroups.y );`
-  }
+	${!linearIndexingAvailable ? `instanceIndex = globalId.x + globalId.y * ( ${workgroupSize} * numWorkgroups.x ) + globalId.z * ( ${workgroupSize} * numWorkgroups.x ) * ( 1 * numWorkgroups.y );` : ''}
 
 	Prefix_Sum_Reduction_0.value[ invocationSubgroupIndex ] = subgroupInclusiveAdd( Prefix_Sum_Reduction_0.value[ invocationSubgroupIndex ] );
 

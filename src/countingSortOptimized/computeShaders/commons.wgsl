@@ -1,6 +1,4 @@
 // directives
-enable subgroups;
-
 struct Vec4ArrayStruct {
 	value: array<vec4<u32>>
 }

@@ -4,6 +4,7 @@ import { SpineScanShortCompute } from './computeShaders/spineScanShort';
 import { SpineScanLongCompute } from './computeShaders/spineScanLong';
 import { DownSweepCompute } from './computeShaders/downsweep';
 import { linkComputeTimestamp, readTimestamp, resolveTimestamp, setupTimestamp } from '../utils';
+import { directivesCode } from './computeShaders/directives';
 
 type PrefixSumElementType = 'float' | 'int' | 'uint';
 type PrefixSumVecType = 'vec4' | 'ivec4' | 'uvec4';
@@ -117,7 +118,6 @@ export class InclusivePrefixSum {
    */
   constructor(
     device: GPUDevice,
-    linearIndexingAvailable: boolean,
     inputVecBuffer: GPUBuffer,
     outputBuffer: GPUBuffer,
     outputBufferOffset: number,
@@ -303,29 +303,43 @@ export class InclusivePrefixSum {
 
     this.pipelines = {} as Record<PrefixSumPipelineName, GPUComputePipeline>;
 
+    const hasLinearIndexing = navigator.gpu.wgslLanguageFeatures.has('linear-indexing');
+    const hasSubgroupID = navigator.gpu.wgslLanguageFeatures.has('subgroup_id')
+
     // spineScanShort only uses @group(0); all others also use @group(1) for params
     const prefixSumPipelinesManifest: PipelineManifestInterface[] = [
       {
         name: 'reduce',
-        code: ReduceCompute(this.workgroupSize, linearIndexingAvailable),
+        code: directivesCode(hasLinearIndexing, false) + prefixSumCommonsWGSL + ReduceCompute(
+          this.workgroupSize,
+          hasLinearIndexing,
+          false
+        ),
         layouts: [this.dataBindGroupLayout, this.paramsBindGroupLayout],
       },
       {
         name: 'spineScanShort',
-        code: SpineScanShortCompute(
+        code: directivesCode(hasLinearIndexing, false) + prefixSumCommonsWGSL + SpineScanShortCompute(
           this.workgroupSize,
-          linearIndexingAvailable
+          hasLinearIndexing
         ),
         layouts: [this.dataBindGroupLayout],
       },
       {
         name: 'spineScanLong',
-        code: SpineScanLongCompute(this.workgroupSize, linearIndexingAvailable),
+        code: directivesCode(hasLinearIndexing, false) + prefixSumCommonsWGSL + SpineScanLongCompute(
+          this.workgroupSize,
+          hasLinearIndexing,
+          false
+        ),
         layouts: [this.dataBindGroupLayout, this.paramsBindGroupLayout],
       },
       {
         name: 'downSweep',
-        code: DownSweepCompute(this.workgroupSize, linearIndexingAvailable),
+        code:
+          directivesCode(hasLinearIndexing, false) +
+          prefixSumCommonsWGSL +
+          DownSweepCompute(this.workgroupSize, hasLinearIndexing, false),
         layouts: [this.dataBindGroupLayout, this.paramsBindGroupLayout],
         computeConstants: {
           OUTPUT_INDEX_OFFSET: outputBufferOffset,
@@ -333,10 +347,14 @@ export class InclusivePrefixSum {
       },
     ];
 
+
+    console.log(hasLinearIndexing);
+    console.log(hasSubgroupID);
     for (const manifest of prefixSumPipelinesManifest) {
+      console.log(manifest.code)
       const computeProgram: GPUProgrammableStage = {
         module: this.device.createShaderModule({
-          code: prefixSumCommonsWGSL + manifest.code,
+          code: manifest.code,
         }),
       };
 

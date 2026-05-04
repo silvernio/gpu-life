@@ -1,5 +1,6 @@
 export const constructBuiltinDeclarations = (
-  linearIndexingAvailable: boolean
+  linearIndexingAvailable: boolean = false,
+  subgroupIDAvailable: boolean = false
 ) => {
   const builtinManifest = [
     {
@@ -47,6 +48,14 @@ export const constructBuiltinDeclarations = (
       label: 'numWorkgroups',
       type: 'vec3<u32>',
     });
+  }
+
+  if (subgroupIDAvailable) {
+    builtinManifest.push({
+      builtin: 'subgroup_id',
+      label: 'invocationSubgroupMetaIndex',
+      type: 'u32'
+    })
   }
 
   const builtinDeclarations = builtinManifest

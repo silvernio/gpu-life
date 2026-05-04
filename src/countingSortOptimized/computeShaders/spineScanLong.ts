@@ -2,10 +2,12 @@ import { constructBuiltinDeclarations } from './utils';
 
 export const SpineScanLongCompute = (
   workgroupSize: number,
-  linearIndexingAvailable: boolean
+  linearIndexingAvailable: boolean = false,
+  subgroupIDAvailable: boolean = false
 ): string => {
   const builtinDeclarations = constructBuiltinDeclarations(
-    linearIndexingAvailable
+    linearIndexingAvailable,
+	subgroupIDAvailable
   );
 
   return /* wgsl */ `
@@ -24,10 +26,7 @@ ${builtinDeclarations}
 ) {
 
 	// system
-	${
-    !linearIndexingAvailable &&
-    `instanceIndex = globalId.x + globalId.y * ( ${workgroupSize} * numWorkgroups.x ) + globalId.z * ( ${workgroupSize} * numWorkgroups.x ) * ( 1 * numWorkgroups.y );`
-  }
+	${!linearIndexingAvailable ? `instanceIndex = globalId.x + globalId.y * ( ${workgroupSize} * numWorkgroups.x ) + globalId.z * ( ${workgroupSize} * numWorkgroups.x ) * ( 1 * numWorkgroups.y );` : ''}
 
 	// vars
 
@@ -40,7 +39,6 @@ ${builtinDeclarations}
 	var spineAlignedSize : u32;
 	var nodeVar1 : array< u32, 16 >;
 	var previousReduction : u32;
-	var invocationSubgroupMetaIndex : u32;
 	var unvectorizedSubgroupOffset : u32;
 	var s_offset : u32;
 	var nodeVar2 : u32;
@@ -70,7 +68,7 @@ ${builtinDeclarations}
 	spineAlignedSize = ( spineAlignedSize * spinePartitionSize );
 	nodeVar1 = array< u32, 16 >( 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u );
 	previousReduction = 0u;
-	invocationSubgroupMetaIndex = ( invocationLocalIndex / subgroupSize );
+	${!subgroupIDAvailable ? 'var invocationSubgroupMetaIndex: u32 = ( invocationLocalIndex / subgroupSize );' : ''}
 	unvectorizedSubgroupOffset = ( ( invocationSubgroupMetaIndex * subgroupSize ) * 16u );
 	s_offset = ( unvectorizedSubgroupOffset + invocationSubgroupIndex );
 

@@ -2,10 +2,12 @@ import { constructBuiltinDeclarations } from './utils';
 
 export const ReduceCompute = (
   workgroupSize: number,
-  linearIndexingAvailable: boolean
+  linearIndexingAvailable: boolean,
+  subgroupIDAvailable: boolean
 ): string => {
   const builtinDeclarations = constructBuiltinDeclarations(
-    linearIndexingAvailable
+    linearIndexingAvailable,
+	subgroupIDAvailable
   );
   return /* wgsl */ `
 
@@ -28,13 +30,9 @@ fn reduce(
 ${builtinDeclarations}
 ) {
 
-	${
-    !linearIndexingAvailable &&
-    `instanceIndex = globalId.x + globalId.y * ( ${workgroupSize} * numWorkgroups.x ) + globalId.z * ( ${workgroupSize} * numWorkgroups.x ) * ( 1 * numWorkgroups.y );`
-  }
+	${!linearIndexingAvailable ? `instanceIndex = globalId.x + globalId.y * ( ${workgroupSize} * numWorkgroups.x ) + globalId.z * ( ${workgroupSize} * numWorkgroups.x ) * ( 1 * numWorkgroups.y );` : ''}
 
     // TODO: Investigate replacing with subgroup_id
-	var invocationSubgroupMetaIndex : u32;
 	var subgroupOffset : u32;
 	var threadSubgroupOffset : u32;
 	var workgroupOffset : u32;
@@ -50,7 +48,7 @@ ${builtinDeclarations}
 	var isValidSubgroupIndex : bool;
 	var t : u32;
 
-	invocationSubgroupMetaIndex = ( invocationLocalIndex / subgroupSize );
+	${!subgroupIDAvailable ? `var invocationSubgroupMetaIndex: u32 = ( invocationLocalIndex / subgroupSize );` : ''}
 	// subgroupOffset = ( ( invocationSubgroupMetaIndex * subgroupSize ) * 4u );
     subgroupOffset = ( ( invocationSubgroupMetaIndex * subgroupSize ) * params.workPerInvocation );
 	threadSubgroupOffset = ( subgroupOffset + invocationSubgroupIndex );
