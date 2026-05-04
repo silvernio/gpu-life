@@ -40,17 +40,14 @@ ${builtinDeclarations}
 	var workgroupOffset : u32;
 	var startThreadBase : u32;
 	var startThread : u32;
-	var nodeVar0 : u32;
-	var nodeVar1 : vec4<u32>;
+	var subgroupReduction : u32;
 	var subgroupSizeLog : u32;
 	var spineSize : u32;
 	var spineSizeLog : u32;
 	var nodeVar2 : u32;
 	var subgroupAlignedSize : u32;
-	var nodeVar3 : u32;
-	var nodeVar4 : u32;
+	var workgroupSectionOffset : u32;
 	var isValidSubgroupIndex : bool;
-	var nodeVar5 : u32;
 	var t : u32;
 
 	invocationSubgroupMetaIndex = ( invocationLocalIndex / subgroupSize );
@@ -61,7 +58,7 @@ ${builtinDeclarations}
     workgroupOffset = ( workgroupId.x * ( params.workgroupSize * params.workPerInvocation ) );
 	startThreadBase = ( threadSubgroupOffset + workgroupOffset );
 	startThread = startThreadBase;
-	nodeVar0 = 0u;
+	subgroupReduction = 0u;
 
 	// if ( ( workgroupId.x < ( 8u - 1u ) ) ) {
     if ( ( workgroupId.x < ( params.workgroupCount - 1u ) ) ) {
@@ -69,7 +66,7 @@ ${builtinDeclarations}
 		// for ( var currentSubgroupInBlock : u32 = 0u; currentSubgroupInBlock < 4u; currentSubgroupInBlock ++ ) {
         for ( var currentSubgroupInBlock : u32 = 0u; currentSubgroupInBlock < params.workPerInvocation; currentSubgroupInBlock ++ ) {
 
-			nodeVar0 = ( nodeVar0 + u32( dot( vec4<u32>( 1u, 1u, 1u, 1u ), Prefix_Sum_Input_Vec_0.value[ startThread ] ) ) );
+			subgroupReduction = ( subgroupReduction + u32( dot( vec4<u32>( 1u, 1u, 1u, 1u ), Prefix_Sum_Input_Vec_0.value[ startThread ] ) ) );
 			startThread = ( startThread + subgroupSize );
 
 		}
@@ -83,7 +80,7 @@ ${builtinDeclarations}
 
 		for ( var currentSubgroupInBlock : u32 = 0u; currentSubgroupInBlock < params.workPerInvocation; currentSubgroupInBlock ++ ) {
 
-			nodeVar0 = ( nodeVar0 + u32( dot( select( vec4<u32>( 0u, 0u, 0u, 0u ), Prefix_Sum_Input_Vec_0.value[ startThread ], ( startThread < params.vecCount ) ), vec4<u32>( 1u, 1u, 1u, 1u ) ) ) );
+			subgroupReduction = ( subgroupReduction + u32( dot( select( vec4<u32>( 0u, 0u, 0u, 0u ), Prefix_Sum_Input_Vec_0.value[ startThread ], ( startThread < params.vecCount ) ), vec4<u32>( 1u, 1u, 1u, 1u ) ) ) );
 			startThread = ( startThread + subgroupSize );
 
 		}
@@ -92,11 +89,11 @@ ${builtinDeclarations}
 
 	}
 
-	nodeVar0 = subgroupAdd( nodeVar0 );
+	subgroupReduction = subgroupAdd( subgroupReduction );
 
 	if ( ( invocationSubgroupIndex == 0u ) ) {
 
-		WorkgroupArray_898[ invocationSubgroupMetaIndex ] = nodeVar0;
+		WorkgroupArray_898[ invocationSubgroupMetaIndex ] = subgroupReduction;
 
 
 	}
@@ -110,23 +107,26 @@ ${builtinDeclarations}
 	nodeVar2 = ( nodeVar2 / subgroupSizeLog );
 	nodeVar2 = ( nodeVar2 * subgroupSizeLog );
 	subgroupAlignedSize = ( 1u << nodeVar2 );
-	nodeVar3 = 0u;
+	workgroupSectionOffset = 0u;
 
+	// In cases where the number of subgroups in a workgroup is greater than the subgroup size itself,
+	// we need to iterate over the array again to capture all the data in the workgroup array buffer
+	// In many cases this loop will only run once
 	for ( var j : u32 = subgroupSize; j <= subgroupAlignedSize; j <<= subgroupSizeLog ) {
 
-		nodeVar4 = ( ( ( invocationLocalIndex + 1u ) << nodeVar3 ) - 1u );
-		isValidSubgroupIndex = ( nodeVar4 < spineSize );
-		t = subgroupAdd( select( 0u, WorkgroupArray_898[ nodeVar4 ], isValidSubgroupIndex ) );
+		var subgroupIndex = ( ( ( invocationLocalIndex + 1u ) << workgroupSectionOffset ) - 1u );
+		isValidSubgroupIndex = ( subgroupIndex < spineSize );
+		t = subgroupAdd( select( 0u, WorkgroupArray_898[ subgroupIndex ], isValidSubgroupIndex ) );
 
 		if ( isValidSubgroupIndex ) {
 
-			WorkgroupArray_898[ nodeVar4 ] = t;
+			WorkgroupArray_898[ subgroupIndex ] = t;
 
 
 		}
 
 		workgroupBarrier();
-		nodeVar3 = ( nodeVar3 + subgroupSizeLog );
+		workgroupSectionOffset = ( workgroupSectionOffset + subgroupSizeLog );
 
 	}
 

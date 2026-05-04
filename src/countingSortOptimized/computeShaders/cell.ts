@@ -1,4 +1,8 @@
+export const cellComputeShader = (
+    workgroupSize: number
+) => {
 
+return /* wgsl */`
 struct Sim {
     colours: f32,
     beta: f32,
@@ -53,7 +57,7 @@ fn hash3i(k: vec3<i32>) -> u32 {
     return h;
 }
 
-@compute @workgroup_size(128)
+@compute @workgroup_size(${workgroupSize})
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     if (global_id.x >= arrayLength(&input)) {
         return;
@@ -74,4 +78,5 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     output[global_id.x] = op;
 
     atomicAdd(&counts[cellHash], 1u);
+}`;
 }

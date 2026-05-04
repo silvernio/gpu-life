@@ -47,8 +47,6 @@ ${builtinDeclarations}
 	var prev : u32;
 	var nodeVar3 : u32;
 	var nodeVar4 : u32;
-	var nodeVar5 : u32;
-	var nodeVar6 : u32;
 	var nodeVar7 : bool;
 	var nodeVar8 : u32;
 	var nodeVar9 : bool;
@@ -56,9 +54,7 @@ ${builtinDeclarations}
 	var nodeVar11 : u32;
 	var nodeVar12 : u32;
 	var nodeVar13 : bool;
-	var nodeVar14 : u32;
 	var nodeVar15 : u32;
-	var nodeVar16 : u32;
 
 	subgroupSizeLog = countTrailingZeros( subgroupSize );
 	spineSize = ( params.workgroupSize >> subgroupSizeLog );

@@ -1,3 +1,8 @@
+export const sortComputeShader = (
+    workgroupSize: number
+) => {
+return /* wgsl */`
+
 struct SortParticle {
     pos: vec2f,
     vel: vec2f,
@@ -12,7 +17,7 @@ struct SortParticle {
 // Result of our prefixSum
 @group(0) @binding(2) var<storage, read_write> prefixSumIndices: array<atomic<u32>>;
 
-@compute @workgroup_size(128)
+@compute @workgroup_size(${workgroupSize})
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     if (global_id.x >= arrayLength(&input)) {
         return;
@@ -22,4 +27,6 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     // Write at an offset of 1 so result in sim.wgsl is true exclusive prefix sum
     let targetIndex = atomicAdd(&prefixSumIndices[value.idx.x + 1u], 1u);
     output[targetIndex] = value;
+}
+`;
 }

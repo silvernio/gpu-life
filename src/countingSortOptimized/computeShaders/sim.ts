@@ -1,4 +1,7 @@
-
+export const simComputeShader = (
+    workgroupSize: number
+) => {
+return /* wgsl */`
 struct Uniforms {
     aspect: f32,
     mouse: vec4<f32>,
@@ -171,7 +174,7 @@ fn getForce(pi: u32) -> vec2f {
     return totalForce + avoidForce;
 }
 
-@compute @workgroup_size(128)
+@compute @workgroup_size(${workgroupSize})
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     if (global_id.x >= arrayLength(&output)) {
         return;
@@ -225,3 +228,5 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
     output[global_id.x] = p;
 }
+`
+};

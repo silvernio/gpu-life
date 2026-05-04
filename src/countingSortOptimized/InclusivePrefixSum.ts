@@ -333,8 +333,6 @@ export class InclusivePrefixSum {
       },
     ];
 
-    console.log(DownSweepCompute(this.workgroupSize, linearIndexingAvailable));
-
     for (const manifest of prefixSumPipelinesManifest) {
       const computeProgram: GPUProgrammableStage = {
         module: this.device.createShaderModule({

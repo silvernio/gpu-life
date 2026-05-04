@@ -5,12 +5,12 @@ import {
   setupTimestamp,
 } from '../utils';
 
-import cellShader from './cell.wgsl?raw';
-import sortShader from './sort.wgsl?raw';
-import simShader from './sim.wgsl?raw';
+import { cellComputeShader } from './computeShaders/cell';
+import { sortComputeShader } from './computeShaders/sort';
+import { simComputeShader } from './computeShaders/sim';
 import { InclusivePrefixSum } from './InclusivePrefixSum';
 
-const workgroupSize = 128;
+let workgroupSize = 128;
 
 let cellPipeline: GPUComputePipeline | undefined;
 let sortPipeline: GPUComputePipeline | undefined;
@@ -33,8 +33,10 @@ let prefixSumModule: InclusivePrefixSum | undefined;
 export function setup(device2: GPUDevice) {
   device = device2;
 
+  workgroupSize = device.limits.maxComputeWorkgroupSizeX;
+
   const cellModule = device.createShaderModule({
-    code: cellShader,
+    code: cellComputeShader(workgroupSize),
   });
 
   setupTimestamp(device, 'cell');
@@ -50,7 +52,7 @@ export function setup(device2: GPUDevice) {
   //
 
   const sortModule = device.createShaderModule({
-    code: sortShader,
+    code: sortComputeShader(workgroupSize),
   });
 
   setupTimestamp(device, 'sort');
@@ -66,7 +68,7 @@ export function setup(device2: GPUDevice) {
   //
 
   const simModule = device.createShaderModule({
-    code: simShader,
+    code: simComputeShader(workgroupSize),
   });
 
   setupTimestamp(device, 'countSim');

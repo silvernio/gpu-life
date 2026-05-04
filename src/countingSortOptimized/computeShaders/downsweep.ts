@@ -52,7 +52,6 @@ ${builtinDeclarations}
 	var laneMask : u32;
 	var clockwiseShift : u32;
 	var prevAccGreatestValue : u32;
-	var nodeVar4 : vec4<u32>;
 	var nodeVar5 : u32;
 	var nodeVar6 : u32;
 	var subgroupSizeLog : u32;
@@ -60,16 +59,12 @@ ${builtinDeclarations}
 	var spineSizeLog : u32;
 	var nodeVar7 : u32;
 	var subgroupAlignedSize : u32;
-	var nodeVar8 : u32;
 	var nodeVar9 : u32;
 	var nodeVar10 : bool;
 	var nodeVar11 : u32;
 	var nodeVar12 : u32;
 	var nodeVar13 : u32;
 	var nodeVar14 : bool;
-	var nodeVar15 : u32;
-	var nodeVar16 : u32;
-	var nodeVar17 : u32;
 	var savedX : array< u32, 4 >;
 
 	invocationSubgroupMetaIndex = ( invocationLocalIndex / subgroupSize );
