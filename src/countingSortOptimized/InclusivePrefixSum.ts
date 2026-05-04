@@ -32,43 +32,6 @@ const divRoundUp = (size: number, part_size: number): number => {
   return Math.floor((size + part_size - 1) / part_size);
 };
 
-/*
-
-const makeTypedArray = (
-  source: SupportedTypedArray,
-  buffer: ArrayBuffer
-): SupportedTypedArray => {
-  if (source instanceof Float32Array) return new Float32Array(buffer);
-  if (source instanceof Int32Array) return new Int32Array(buffer);
-  return new Uint32Array(buffer);
-};
-
-
-const getTypeFromTypedArray = (
-  typedArray: SupportedTypedArray
-): PrefixSumElementType => {
-  switch (typedArray.constructor.name) {
-    case 'Float32Array': {
-      return 'float';
-    }
-
-    case 'Int32Array': {
-      return 'int';
-    }
-
-    case 'Uint32Array': {
-      return 'uint';
-    }
-
-    default: {
-      return typedArray.constructor.name
-        .substring(0, -6)
-        .toLowerCase() as PrefixSumElementType;
-    }
-  }
-}; */
-
-
 /**
  * A class that represents an inclusive prefix sum running under the reduce/scan strategy.
  * Currently limited to one-dimensional data buffers.
@@ -130,16 +93,9 @@ export class InclusivePrefixSum {
      *
      * @type {string}
      */
-    // this.type = getTypeFromTypedArray(inputArray);
     this.type = 'uint';
 
     this.vecType = 'uvec4';
-
-    /* if (this.type === 'int') {
-      this.vecType = 'ivec4';
-    } else if (this.type === 'uint') {
-      this.vecType = 'uvec4';
-    } */
 
     /**
      * The size of the data.
@@ -147,26 +103,6 @@ export class InclusivePrefixSum {
      * @type {number}
      */
     this.count = inputVecBuffer.size / Uint32Array.BYTES_PER_ELEMENT;
-
-    // Allign size of buffer to vec4
-    /* if (inputArray.length % 4 !== 0) {
-      const missingElements = 4 - (inputArray.length % 4);
-      const bytesToAdd = missingElements * inputArray.BYTES_PER_ELEMENT;
-      this.inputArrayBuffer = makeTypedArray(
-        inputArray,
-        new ArrayBuffer(inputArray.byteLength + bytesToAdd)
-      );
-      this.inputArrayBuffer.set([
-        ...inputArray,
-        ...Array(missingElements).fill(0),
-      ]);
-    } else {
-      this.inputArrayBuffer = makeTypedArray(
-        inputArray,
-        new ArrayBuffer(inputArray.byteLength)
-      );
-      this.inputArrayBuffer.set(inputArray);
-    } */
 
     /**
      * The number of 4-dimensional vectors needed to fully represent the data in the data buffer.
@@ -348,10 +284,7 @@ export class InclusivePrefixSum {
     ];
 
 
-    console.log(hasLinearIndexing);
-    console.log(hasSubgroupID);
     for (const manifest of prefixSumPipelinesManifest) {
-      console.log(manifest.code)
       const computeProgram: GPUProgrammableStage = {
         module: this.device.createShaderModule({
           code: manifest.code,
@@ -444,10 +377,4 @@ export class InclusivePrefixSum {
     });
   }
 
-  // Actual number of workgroups dispatched should be dispatchSize / workgroupSize
-  // reduce .compute(this.dispatchSize, [this.workgroupSize])
-
-  // spineScanShort .compute(this.numWorkgroups, [this.workgroupSize])
-  // spineScanLong .compute(this.numWorkgroups, [this.workgroupSize])
-  // downsweep .compute(this.dispatchSize, [this.workgroupSize])
 }

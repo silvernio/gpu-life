@@ -32,7 +32,6 @@ ${builtinDeclarations}
 
 	${!linearIndexingAvailable ? `instanceIndex = globalId.x + globalId.y * ( ${workgroupSize} * numWorkgroups.x ) + globalId.z * ( ${workgroupSize} * numWorkgroups.x ) * ( 1 * numWorkgroups.y );` : ''}
 
-    // TODO: Investigate replacing with subgroup_id
 	var subgroupOffset : u32;
 	var threadSubgroupOffset : u32;
 	var workgroupOffset : u32;

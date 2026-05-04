@@ -40,8 +40,6 @@ ${builtinDeclarations}
 
 	${!linearIndexingAvailable ? `instanceIndex = globalId.x + globalId.y * ( ${workgroupSize} * numWorkgroups.x ) + globalId.z * ( ${workgroupSize} * numWorkgroups.x ) * ( 1 * numWorkgroups.y );` : ''}
 
-    // TODO: Investigate replacing with subgroup_id
-	// var invocationSubgroupMetaIndex : u32;
 	var subgroupOffset : u32;
 	var workgroupOffset : u32;
 	var nodeVar0 : u32;
