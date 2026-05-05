@@ -100,21 +100,24 @@ fn getCellForce(
     var avoidForceX = 0f;
     var avoidForceY = 0f;
 
-    let l = arrayLength(&input);
     let mrs = sim.rMax * sim.rMax;
 
     var div = 0f;
 
-    let particlesThatCameBeforeThisCell = prefixSumIndices[cell]; // index.x
-    let particlesInThisCell = counts[cell]; // index.y
+    let particlesInThisCell = counts[cell];
 
     if (particlesInThisCell == 0u) {
         return Force(vec2f(0), vec2f(0), 0);
     }
 
+    let particlesThatCameBeforeThisCell = prefixSumIndices[cell];
+    let particleEnd = particlesThatCameBeforeThisCell + particlesInThisCell;
+
+    let matrixRow = u32(p.colour) * u32(sim.colours);
+
     for (
         var i = particlesThatCameBeforeThisCell;
-        i < particlesThatCameBeforeThisCell + particlesInThisCell;
+        i < particleEnd;
         i++
     ) {
         let ip = sorted[i];
@@ -128,7 +131,7 @@ fn getCellForce(
         let rs = rx * rx + ry * ry;
         if (rs > 0 && rs < mrs) {
             let r = sqrt(rs);
-            let f = force(r / sim.rMax, matrix[u32(p.colour) * u32(sim.colours) + u32(ip.colour)]);
+            let f = force(r / sim.rMax, matrix[matrixRow + u32(ip.colour)]);
             totalForceX += rx / r * f.x;
             totalForceY += ry / r * f.x;
 
@@ -153,16 +156,16 @@ fn getForce(pi: u32) -> vec2f {
 
     var div = 0f;
 
-    let gridPos = vec2i(floor(p.pos / sim.cellSize));
-
     let cxmin = i32(floor((p.pos.x - sim.rMax) / sim.cellSize));
     let cymin = i32(floor((p.pos.y - sim.rMax) / sim.cellSize));
     let cxmax = i32(floor((p.pos.x + sim.rMax) / sim.cellSize));
     let cymax = i32(floor((p.pos.y + sim.rMax) / sim.cellSize));
 
+    let numCells = u32(sim.cellAmt);
+
     for (var cx = cxmin; cx <= cxmax; cx++) {
         for (var cy = cymin; cy <= cymax; cy++) {
-            let c = hash3i(vec3i(cx, cy, 0)) % u32(sim.cellAmt);
+            let c = hash3i(vec3i(cx, cy, 0)) % numCells;
             let force = getCellForce(pi, p, c);
             totalForce += force.total;
             avoidForce += force.avoid;
@@ -180,8 +183,6 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
         return;
     }
     var p  = input[global_id.x];
-
-    let mx = uniforms.mouse.x;
 
     let force = getForce(global_id.x);
 
@@ -207,13 +208,12 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
         let d = sqrt(dx * dx + dy * dy);
         if (d < sim.rMax) {
-            if (uniforms.mouse.z == 1) {
-                p.vel.x += dx * 3;
-                p.vel.y += dy * 3;
-            } else {
-                p.vel.x -=  dx * 3;
-                p.vel.y -= dy * 3;
-            }
+            var scaledDX = dx * 3;
+            var scaledDY = dy * 3;
+            var changeDX = select(-scaledDX, scaledDX, uniforms.mouse.z == 1);
+            var changeDY = select(-scaledDY, scaledDY, uniforms.mouse.z == 1);
+            p.vel.x += changeDX;
+            p.vel.y += changeDY;
         }
     }
 

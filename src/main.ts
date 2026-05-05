@@ -90,8 +90,6 @@ const engines: Record<
   countingSort,
 };
 
-console.log(engines)
-
 let engine: string = 'countingSort';
 setEngineDisplay(engine);
 
