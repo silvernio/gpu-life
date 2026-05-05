@@ -90,7 +90,7 @@ const engines: Record<
   countingSort,
 };
 
-let engine: string = 'countingSort';
+let engine: string = 'linkedList';
 setEngineDisplay(engine);
 
 (async () => {
