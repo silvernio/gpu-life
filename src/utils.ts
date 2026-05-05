@@ -99,6 +99,7 @@ export async function logBufferu32(
 }
 
 let canTimestamp = false;
+let canSubgroups = false;
 const timestamps: Record<
   string,
   {
@@ -111,6 +112,7 @@ const timestamps: Record<
 
 export async function requestTimestamps(adapter: GPUAdapter) {
   canTimestamp = adapter.features.has('timestamp-query');
+  canSubgroups = adapter.features.has('subgroups');
 
   const urlParams = new URLSearchParams(window.location.search);
   const flag = urlParams.has('noTimestamp');
@@ -118,18 +120,22 @@ export async function requestTimestamps(adapter: GPUAdapter) {
     canTimestamp = false;
   }
 
-  if (canTimestamp) {
-    const device = await adapter.requestDevice({
-      requiredFeatures: ['timestamp-query', 'subgroups'],
-    });
-    if (!device.features.has('timestamp-query')) {
-      canTimestamp = false;
-      return device;
-    }
-    return device;
-  } else {
-    return await adapter.requestDevice();
+  const device = await adapter.requestDevice({
+    requiredFeatures: [
+      ...(canTimestamp ? ['timestamp-query' as GPUFeatureName] : []),
+      ...(canSubgroups ? ['subgroups' as GPUFeatureName] : [])
+    ]
+  })
+
+  if (!device.features.has('timestamp-query')) {
+    canTimestamp = false;
   }
+  if (!device.features.has('subgroups')) {
+    canSubgroups = false;
+  }
+
+  return device;
+
 }
 
 export function setupTimestamp(device: GPUDevice, name: string) {

@@ -240,7 +240,6 @@ export class InclusivePrefixSum {
     this.pipelines = {} as Record<PrefixSumPipelineName, GPUComputePipeline>;
 
     const hasLinearIndexing = navigator.gpu.wgslLanguageFeatures.has('linear-indexing');
-    const hasSubgroupID = navigator.gpu.wgslLanguageFeatures.has('subgroup_id')
 
     // spineScanShort only uses @group(0); all others also use @group(1) for params
     const prefixSumPipelinesManifest: PipelineManifestInterface[] = [

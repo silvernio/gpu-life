@@ -79,18 +79,20 @@ let fpsc = 0;
 
 import * as nSquared from './nSquared/main';
 import * as linkedList from './linkedList/main';
-//import * as countingSort from './countingSort/main';
-import * as countingSort from './countingSortOptimized/main';
+import * as countingSort from './countingSort/main';
+import * as prefixSum from './countingSortOptimized/main';
 const engines: Record<
   string,
-  typeof nSquared | typeof linkedList | typeof countingSort
+  typeof nSquared | typeof linkedList | typeof countingSort | typeof prefixSum
 > = {
   nSquared,
   linkedList,
   countingSort,
 };
 
-let engine: string = 'linkedList';
+console.log(engines)
+
+let engine: string = 'countingSort';
 setEngineDisplay(engine);
 
 (async () => {
@@ -101,6 +103,12 @@ setEngineDisplay(engine);
   if (!adapter) return;
 
   device = await requestTimestamps(adapter);
+
+  if (device?.features.has('subgroups')) {
+    engines['prefixSum'] = prefixSum;
+  }
+
+
   context = canvas.getContext('webgpu') ?? undefined;
 
   if (!context) return;
@@ -393,13 +401,13 @@ function update() {
   const commands = commandEncoder.finish();
   device.queue.submit([commands]);
 
-  /*device.popErrorScope().then((error) => {
+  device.popErrorScope().then((error) => {
     if (error) {
       // some weird bug happened with timestamps, just disable it and restart the simulation
       window.location.href +=
         (window.location.search ? '&' : '?') + 'noTimestamp';
     }
-  }); */
+  });
 
   const cpuTime = performance.now() - start;
   globalPerformanceParams.cpu = cpuTime;
