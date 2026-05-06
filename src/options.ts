@@ -61,6 +61,7 @@ export const engineSelect = pane.addBinding(params, 'engine', {
     'Counting Sort': 'countingSort',
     'Atomic Linked Lists': 'linkedList',
     NSquared: 'nSquared',
+    'Prefix Sum': 'prefixSum'
   },
 });
 
@@ -128,6 +129,12 @@ export const performanceParams = {
     prefix: 0,
     sort: 0,
     sim: 0,
+  },
+  prefixSum: {
+    cell: 0,
+    prefix: 0,
+    sort: 0,
+    sim: 0
   },
   linkedList: {
     construct: 0,

@@ -80,9 +80,10 @@ let fpsc = 0;
 import * as nSquared from './nSquared/main';
 import * as linkedList from './linkedList/main';
 import * as countingSort from './countingSort/main';
+import * as prefixSum from './countingSortOptimized/main';
 const engines: Record<
   string,
-  typeof nSquared | typeof linkedList | typeof countingSort
+  typeof nSquared | typeof linkedList | typeof countingSort | typeof prefixSum
 > = {
   nSquared,
   linkedList,
@@ -100,6 +101,12 @@ setEngineDisplay(engine);
   if (!adapter) return;
 
   device = await requestTimestamps(adapter);
+
+  if (device?.features.has('subgroups')) {
+    engines['prefixSum'] = prefixSum;
+  }
+
+
   context = canvas.getContext('webgpu') ?? undefined;
 
   if (!context) return;
