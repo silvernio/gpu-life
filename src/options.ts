@@ -1,10 +1,23 @@
-export const particleAmt = 50000;
+const urlParams = new URLSearchParams(window.location.search)
+
+function validateURLParam(key: string, defaultValue: number): number;
+function validateURLParam(key: string, defaultValue: string): string;
+function validateURLParam(key: string, defaultValue: number | string): number | string {
+  const val = urlParams.get(key);
+  if (val === null) return defaultValue;
+  return typeof defaultValue === 'number' ? parseInt(val) : val;
+}
+
+export const particleAmt = validateURLParam('particleCount', 50000);
 export const colourAmt = 200;
-const cellAmt = 2000;
+const cellAmt = validateURLParam('cellCount', 2000);
+const defaultEngine = validateURLParam('engine', 'linkedList');
+const defaultRadius = validateURLParam('radius', 15);
+const defaultWorldSize = validateURLParam('worldSize', 6);
 
 export const params = {
   fps: 0,
-  engine: 'linkedList',
+  engine: defaultEngine,
   particles: particleAmt,
   colours: colourAmt,
   cells: cellAmt,
@@ -12,14 +25,14 @@ export const params = {
 
 export const optionParams = {
   colours: colourAmt,
-  r: 15,
+  r: defaultRadius,
   force: 1,
   beta: 0.3,
   delta: 0.02,
   friction: 0.04,
   cells: cellAmt,
   avoidance: 4,
-  worldSize: 6,
+  worldSize: defaultWorldSize,
   border: true,
   vortex: false,
 };
